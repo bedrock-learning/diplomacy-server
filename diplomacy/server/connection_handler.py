@@ -60,6 +60,8 @@ class ConnectionHandler(WebSocketHandler):
 
     def check_origin(self, origin):
         """ Return True if we should accept connexion from given origin (str). """
+        # TODO Check hostname is coming from Bedrock? Host can be spoofed, maybe we don't need this at all...
+        return True
 
         # It seems origin may be 'null', e.g. if client is a web page loaded from disk (`file:///my_test_file.html`).
         # Accept it.
