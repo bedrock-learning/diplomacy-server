@@ -1,3 +1,5 @@
+# THIS IS A FORK! TODO: Make a Bedrock-specific Readme and make this code OSS to satisfy the AGPL
+
 # Diplomacy: DATC-Compliant Game Engine [![Build Status](https://travis-ci.org/diplomacy/diplomacy.svg?branch=master)](https://travis-ci.org/diplomacy/diplomacy) [![Documentation Status](https://readthedocs.org/projects/diplomacy/badge/?version=latest)](https://diplomacy.readthedocs.io/en/latest/?badge=latest)
 
 This project contains an open-source DATC-compliant Diplomacy game engine, a client-server architecture for network play, a web interface to play against bots and to visualize games, and a DAIDE-compatible adapter to connect DAIDE bots to the server.
