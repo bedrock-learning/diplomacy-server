@@ -723,7 +723,7 @@ def on_process_game(server, request, connection_handler):
         :type server: diplomacy.Server
         :type request: diplomacy.communication.requests.ProcessGame
     """
-    level = verify_request(server, request, connection_handler, observer_role=False, power_role=False)
+    level = verify_request(server, request, connection_handler, observer_role=False, power_role=True)
     assert_game_not_finished(level.game)
     for power_name in level.game.get_map_power_names():
         # Force power to not wait and tag it as if it has orders.
