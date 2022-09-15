@@ -691,6 +691,7 @@ def on_list_games(server, request, connection_handler):
             map_name=server_game.map_name,
             observer_level=server_game.get_observer_level(username),
             controlled_powers=server_game.get_controlled_power_names(username),
+            dummy_powers=server_game.get_dummy_power_names(),
             rules=server_game.rules,
             status=server_game.status,
             n_players=server_game.count_controlled_powers(),

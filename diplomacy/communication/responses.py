@@ -126,7 +126,7 @@ class DataGameInfo(_AbstractResponse):
     """
     __slots__ = ['game_id', 'phase', 'timestamp', 'map_name', 'rules', 'status', 'n_players',
                  'n_controls', 'deadline', 'registration_password', 'observer_level',
-                 'controlled_powers', 'timestamp_created']
+                 'controlled_powers', 'dummy_powers', 'timestamp_created']
     params = {
         strings.GAME_ID: str,
         strings.PHASE: str,
@@ -136,6 +136,7 @@ class DataGameInfo(_AbstractResponse):
         strings.OBSERVER_LEVEL: parsing.OptionalValueType(parsing.EnumerationType(
             (strings.MASTER_TYPE, strings.OMNISCIENT_TYPE, strings.OBSERVER_TYPE))),
         strings.CONTROLLED_POWERS: parsing.OptionalValueType(parsing.SequenceType(str)),
+        strings.DUMMY_POWERS: parsing.OptionalValueType(parsing.SequenceType(str)),
         strings.RULES: parsing.OptionalValueType(parsing.SequenceType(str)),
         strings.STATUS: parsing.OptionalValueType(parsing.EnumerationType(strings.ALL_GAME_STATUSES)),
         strings.N_PLAYERS: parsing.OptionalValueType(int),
@@ -152,6 +153,7 @@ class DataGameInfo(_AbstractResponse):
         self.map_name = None                    # type: str
         self.observer_level = None              # type: str
         self.controlled_powers = None           # type: list
+        self.dummy_powers = None                # type: list
         self.rules = None                       # type: list
         self.status = None                      # type: str
         self.n_players = None                   # type: int
