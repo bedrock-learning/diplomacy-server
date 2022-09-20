@@ -28,19 +28,11 @@ jobs:
           username: ${{ secrets.TESTINGCONTAINERAPP_REGISTRY_USERNAME }}
           password: ${{ secrets.TESTINGCONTAINERAPP_REGISTRY_PASSWORD }}
         
-      - name: Build dev container
-        uses: docker/build-push-action@v2
-        with:
-          push: false
-          file: ./dev.dockerfile
-          context: .
-          tags: thebedrock.azurecr.io/diplomacy-dev
-        
       - name: Build and push deploy container
         uses: docker/build-push-action@v2
         with:
           push: true
-          file: ./deploy.dockerfile
+          file: ./Dockerfile
           context: .
           tags: thebedrock.azurecr.io/diplomacy-server:${{ github.sha }}
 
