@@ -1,5 +1,4 @@
 FROM ubuntu:latest
-
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
@@ -17,7 +16,3 @@ RUN chown -R node:node /home/node/data
 WORKDIR /home/node/.cache
 RUN mkdir -p /home/node/.cache/diplomacy
 RUN chown -R node:node /home/node/.cache/diplomacy
-# RUN mkdir -p /workspaces/third_party/diplomacy
-# RUN chown -R node:node /workspaces/third_party/diplomacy
-
-# RUN pip install -e /workspaces/third_party/diplomacy
