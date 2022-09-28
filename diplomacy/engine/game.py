@@ -862,7 +862,9 @@ class Game(Jsonable):
             # We must generate a timestamp for this message.
             assert self.is_server_game()
             if message.phase != self.current_short_phase:
-                raise exceptions.GamePhaseException(self.current_short_phase, message.phase)
+                # Bedrock edits: We don't care when messages come in.
+                message.phase = self.current_short_phase
+                # raise exceptions.GamePhaseException(self.current_short_phase, message.phase)
             assert not self.messages or common.timestamp_microseconds() >= self.messages.last_key()
             time.sleep(1e-6)
             message.time_sent = common.timestamp_microseconds()

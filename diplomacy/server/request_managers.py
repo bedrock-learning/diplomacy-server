@@ -797,7 +797,9 @@ def on_send_game_message(server, request, connection_handler):
         if not level.game.is_game_active:
             raise exceptions.GameNotPlayingException()
         if level.game.current_short_phase != message.phase:
-            raise exceptions.GamePhaseException(level.game.current_short_phase, message.phase)
+            # Bedrock edits: We don't care when messages come in.
+            message.phase = level.game.current_short_phase
+            # raise exceptions.GamePhaseException(level.game.current_short_phase, message.phase)
         if not level.game.has_power(message.recipient):
             raise exceptions.MapPowerException(message.recipient)
         username = server.users.get_name(token)
