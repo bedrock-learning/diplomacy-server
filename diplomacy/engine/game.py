@@ -627,7 +627,18 @@ class Game(Jsonable):
         if self.messages:
             timestamp = max(self.messages.last_key(), timestamp)
         return timestamp
+    
+    def get_latest_turn_started_timestamp(self):
+        """ Return timestamp of latest processed turn, or game creation time if no turns yet taken
 
+            :return: a timestamp
+            :rtype: int
+        """
+        timestamp = self.timestamp_created
+        if self.state_history:
+            timestamp = max(self.state_history.last_value()['timestamp'], timestamp)
+        return timestamp
+        
     @classmethod
     def filter_messages(cls, messages, game_role, timestamp_from=None, timestamp_to=None):
         """ Filter given messages based on given game role between given timestamps (bounds included).

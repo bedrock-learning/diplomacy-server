@@ -112,6 +112,7 @@ class DataGameInfo(_AbstractResponse):
         - **timestamp**: latest timestamp when data was saved into game on server
           (ie. game state or message)
         - **timestamp_created**: timestamp when game was created on server
+        - **latest_turn_started_timestamp**: timestamp of beginning of the current turn, for calculating current deadline
         - **map_name**: (optional) game map name
         - **observer_level**: (optional) highest observer level allowed for the user who sends
           the request. Either ``'observer_type'``, ``'omniscient_type'`` or ``'master_type'``.
@@ -126,12 +127,13 @@ class DataGameInfo(_AbstractResponse):
     """
     __slots__ = ['game_id', 'phase', 'timestamp', 'map_name', 'rules', 'status', 'n_players',
                  'n_controls', 'deadline', 'registration_password', 'observer_level',
-                 'controlled_powers', 'dummy_powers', 'timestamp_created']
+                 'controlled_powers', 'dummy_powers', 'timestamp_created', 'latest_turn_started_timestamp']
     params = {
         strings.GAME_ID: str,
         strings.PHASE: str,
         strings.TIMESTAMP: int,
         strings.TIMESTAMP_CREATED: int,
+        strings.LATEST_TURN_STARTED_TIMESTAMP: int,
         strings.MAP_NAME: parsing.OptionalValueType(str),
         strings.OBSERVER_LEVEL: parsing.OptionalValueType(parsing.EnumerationType(
             (strings.MASTER_TYPE, strings.OMNISCIENT_TYPE, strings.OBSERVER_TYPE))),
@@ -150,6 +152,7 @@ class DataGameInfo(_AbstractResponse):
         self.phase = None                       # type: str
         self.timestamp = None                   # type: int
         self.timestamp_created = None           # type: int
+        self.latest_turn_started_timestamp = None           # type: int
         self.map_name = None                    # type: str
         self.observer_level = None              # type: str
         self.controlled_powers = None           # type: list
