@@ -317,7 +317,8 @@ def on_get_games_info(server, request, connection_handler):
                 n_players=server_game.count_controlled_powers(),
                 n_controls=server_game.get_expected_controls_count(),
                 deadline=server_game.deadline,
-                registration_password=bool(server_game.registration_password)
+                registration_password=bool(server_game.registration_password,
+                powers=server_game.get_controllers())
             ))
         except exceptions.GameIdException:
             # Invalid game ID, just pass.
@@ -699,7 +700,8 @@ def on_list_games(server, request, connection_handler):
             n_players=server_game.count_controlled_powers(),
             n_controls=server_game.get_expected_controls_count(),
             deadline=server_game.deadline,
-            registration_password=bool(server_game.registration_password)
+            registration_password=bool(server_game.registration_password),
+            powers=server_game.get_controllers(),
         ))
     return responses.DataGames(data=selected_game_indices, request_id=request.request_id)
 
@@ -1160,7 +1162,8 @@ def on_synchronize(server, request, connection_handler):
                                   phase=level.game.current_short_phase,
                                   timestamp=level.game.get_latest_timestamp(),
                                   timestamp_created=level.game.timestamp_created,
-                                  latest_turn_started_timestamp = server_game.get_latest_turn_started_timestamp(),
+                                  latest_turn_started_timestamp = level.game.get_latest_turn_started_timestamp(),
+                                  powers=level.game.get_controllers(),
                                   request_id=request.request_id)
 
 def on_unknown_token(server, request, connection_handler):

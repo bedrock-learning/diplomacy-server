@@ -124,10 +124,11 @@ class DataGameInfo(_AbstractResponse):
         - **n_controls**: (optional) number of controlled powers required by the game to be active
         - **deadline**: (optional) game deadline - time to wait before processing a game phase
         - **registration_password**: (optional) boolean - if True, a password is required to join the game
+        - **powers**: dictionary mapping each power name to its current controller name
     """
     __slots__ = ['game_id', 'phase', 'timestamp', 'map_name', 'rules', 'status', 'n_players',
                  'n_controls', 'deadline', 'registration_password', 'observer_level',
-                 'controlled_powers', 'dummy_powers', 'timestamp_created', 'latest_turn_started_timestamp']
+                 'controlled_powers', 'dummy_powers', 'timestamp_created', 'latest_turn_started_timestamp', 'powers']
     params = {
         strings.GAME_ID: str,
         strings.PHASE: str,
@@ -144,7 +145,8 @@ class DataGameInfo(_AbstractResponse):
         strings.N_PLAYERS: parsing.OptionalValueType(int),
         strings.N_CONTROLS: parsing.OptionalValueType(int),
         strings.DEADLINE: parsing.OptionalValueType(int),
-        strings.REGISTRATION_PASSWORD: parsing.OptionalValueType(bool)
+        strings.REGISTRATION_PASSWORD: parsing.OptionalValueType(bool),
+        strings.POWERS: parsing.DictType(str, parsing.OptionalValueType(str)),
     }
 
     def __init__(self, **kwargs):
@@ -163,6 +165,7 @@ class DataGameInfo(_AbstractResponse):
         self.n_controls = None                  # type: int
         self.deadline = None                    # type: int
         self.registration_password = None       # type: bool
+        self.powers = None                      # type: list
         super(DataGameInfo, self).__init__(**kwargs)
 
 class DataPossibleOrders(_AbstractResponse):
