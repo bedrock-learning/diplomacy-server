@@ -16,6 +16,8 @@ FROM diplomacy-dev AS diplomacy-deploy
 
 USER root
 RUN useradd --create-home --user-group --uid 1000 node
+RUN mkdir -p /workspaces/third_party/diplomacy
+RUN chown -R node:node /workspaces/third_party/diplomacy
 
 USER node
 WORKDIR /home/node
@@ -24,9 +26,6 @@ RUN chown -R node:node /home/node/data
 WORKDIR /home/node/.cache
 RUN mkdir -p /home/node/.cache/diplomacy
 RUN chown -R node:node /home/node/.cache/diplomacy
-
-RUN mkdir -p /workspaces/third_party/diplomacy
-RUN chown -R node:node /workspaces/third_party/diplomacy
 
 USER node
 ADD . /workspaces/third_party/diplomacy
