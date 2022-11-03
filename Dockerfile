@@ -9,16 +9,7 @@ RUN apt-get update \
   && pip3 --no-cache-dir install --upgrade pip \
   && rm -rf /var/lib/apt/lists/*
 
-
-
-# Deploy stage - for packaging everything up into a self-contained container for pushing to ACR.
-FROM diplomacy-dev AS diplomacy-deploy
-
-USER root
 RUN useradd --create-home --user-group --uid 1000 node
-RUN mkdir -p /workspaces/third_party/diplomacy
-RUN chown -R node:node /workspaces/third_party/diplomacy
-
 USER node
 WORKDIR /home/node
 RUN mkdir -p /home/node/data
@@ -26,6 +17,14 @@ RUN chown -R node:node /home/node/data
 WORKDIR /home/node/.cache
 RUN mkdir -p /home/node/.cache/diplomacy
 RUN chown -R node:node /home/node/.cache/diplomacy
+
+# Deploy stage - for packaging everything up into a self-contained container for pushing to ACR.
+FROM diplomacy-dev AS diplomacy-deploy
+
+USER root
+
+RUN mkdir -p /workspaces/third_party/diplomacy
+RUN chown -R node:node /workspaces/third_party/diplomacy
 
 USER node
 ADD . /workspaces/third_party/diplomacy
