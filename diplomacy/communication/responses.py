@@ -23,6 +23,7 @@ from diplomacy.utils import exceptions
 from diplomacy.utils.game_phase_data import GamePhaseData
 from diplomacy.utils.network_data import NetworkData
 from diplomacy.utils.scheduler_event import SchedulerEvent
+from diplomacy.engine.power import Power
 
 class _AbstractResponse(NetworkData):
     """ Base response object """
@@ -146,7 +147,7 @@ class DataGameInfo(_AbstractResponse):
         strings.N_CONTROLS: parsing.OptionalValueType(int),
         strings.DEADLINE: parsing.OptionalValueType(int),
         strings.REGISTRATION_PASSWORD: parsing.OptionalValueType(bool),
-        strings.POWERS: parsing.DictType(str, parsing.OptionalValueType(str)),
+        strings.POWERS: parsing.DefaultValueType(parsing.DictType(str, parsing.JsonableClassType(Power)), {}),
     }
 
     def __init__(self, **kwargs):

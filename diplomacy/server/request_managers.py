@@ -701,7 +701,7 @@ def on_list_games(server, request, connection_handler):
             n_controls=server_game.get_expected_controls_count(),
             deadline=server_game.deadline,
             registration_password=bool(server_game.registration_password),
-            powers=server_game.get_controllers(),
+            powers={power.name: power for power in server_game.powers.values()},
         ))
     return responses.DataGames(data=selected_game_indices, request_id=request.request_id)
 
