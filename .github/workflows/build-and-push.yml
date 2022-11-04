@@ -34,7 +34,9 @@ jobs:
           push: true
           file: ./Dockerfile
           context: .
-          tags: thebedrock.azurecr.io/diplomacy-server:${{ github.sha }}
+          tags: |
+            thebedrock.azurecr.io/diplomacy-server:${{ github.sha }}
+            thebedrock.azurecr.io/diplomacy-server:latest
 
 
   deploy:
