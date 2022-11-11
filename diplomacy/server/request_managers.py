@@ -443,15 +443,17 @@ def on_join_game(server, request, connection_handler):
             raise exceptions.GameRegistrationPasswordException()
 
         # No new player allowed if game is ended.
-        if server_game.is_game_completed or server_game.is_game_canceled:
-            raise exceptions.GameFinishedException()
+        # BEDROCK edits: Let them join ended games to review the board.
+        # if server_game.is_game_completed or server_game.is_game_canceled:
+        #     raise exceptions.GameFinishedException()
 
         if not server_game.has_power(power_name):
             raise exceptions.MapPowerException(power_name)
 
         # Forbid to play a power that is already eliminated.
-        if server_game.get_power(power_name).is_eliminated():
-            raise exceptions.ResponseException('%s is eliminated.' % power_name)
+        # BEDROCK edits: Let them join games after eliminated to review the board.
+        # if server_game.get_power(power_name).is_eliminated():
+        #     raise exceptions.ResponseException('%s is eliminated.' % power_name)
 
         if username == constants.PRIVATE_BOT_USERNAME:
             # Private bot is allowed to control any dummy power after game started
