@@ -890,7 +890,7 @@ def on_set_game_status(server, request, connection_handler):
         :type server: diplomacy.Server
         :type request: diplomacy.communication.requests.SetGameStatus
     """
-    level = verify_request(server, request, connection_handler, observer_role=False, power_role=False)
+    level = verify_request(server, request, connection_handler, require_master=True)
     status = request.status
     previous_status = level.game.status
     if previous_status != status:
