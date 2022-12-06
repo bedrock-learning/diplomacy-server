@@ -198,6 +198,7 @@ class Game(Jsonable):
             does NOT count toward dislodgment
 
         - **timestamp_created**: timestamp in microseconds when game object was created on server side.
+        - **latest_status_change_timestamp**: timestamp in microseconds when game status was last changed
         - **victory**:
 
           - Indicates the number of SUPPLY [default] centers one power must control to win the game
@@ -222,7 +223,7 @@ class Game(Jsonable):
                  'messages', 'order_history', 'orders', 'ordered_units', 'phase_type', 'win', 'combat', 'command',
                  'result', 'supports', 'dislodged', 'lost', 'convoy_paths', 'convoy_paths_possible',
                  'convoy_paths_dest', 'zobrist_hash', 'renderer', 'game_id', 'map_name', 'role', 'rules',
-                 'message_history', 'state_history', 'result_history', 'status', 'timestamp_created', 'n_controls',
+                 'message_history', 'state_history', 'result_history', 'status', 'timestamp_created', 'latest_status_change_timestamp', 'n_controls',
                  'deadline', 'registration_password', 'observer_level', 'controlled_powers', '_phase_wrapper_type',
                  'phase_abbr', '_unit_owner_cache', 'daide_port', 'fixed_state']
     zobrist_tables = {}
@@ -256,6 +257,7 @@ class Game(Jsonable):
         strings.STATE_HISTORY: parsing.DefaultValueType(parsing.DictType(str, dict), {}),
         strings.STATUS: parsing.DefaultValueType(parsing.EnumerationType(strings.ALL_GAME_STATUSES), strings.FORMING),
         strings.TIMESTAMP_CREATED: parsing.OptionalValueType(int),
+        strings.LATEST_STATUS_CHANGE_TIMESTAMP : parsing.OptionalValueType(int),
         strings.VICTORY: parsing.DefaultValueType(parsing.SequenceType(int), []),
         strings.WIN: parsing.DefaultValueType(int, 0),
         strings.ZOBRIST_HASH: parsing.DefaultValueType(int, 0),
@@ -286,6 +288,7 @@ class Game(Jsonable):
         self.state_history, self.order_history, self.result_history, self.message_history = {}, {}, {}, {}
         self.status = None  # type: str
         self.timestamp_created = None  # type: int
+        self.latest_status_change_timestamp = None # type: int
         self.n_controls = None
         self.deadline = 0
         self.registration_password = None
@@ -336,6 +339,9 @@ class Game(Jsonable):
         # Check timestamp_created.
         if self.timestamp_created is None:
             self.timestamp_created = common.timestamp_microseconds()
+
+        if self.latest_status_change_timestamp is None:
+            self.latest_status_change_timestamp = self.timestamp_created
 
         # Check game ID.
         if self.game_id is None:
@@ -635,6 +641,8 @@ class Game(Jsonable):
             :rtype: int
         """
         timestamp = self.timestamp_created
+        if self.latest_status_change_timestamp is not None:
+            timestamp = self.latest_status_change_timestamp
         if self.state_history:
             timestamp = max(self.state_history.last_value()['timestamp'], timestamp)
         return timestamp
@@ -752,6 +760,7 @@ class Game(Jsonable):
         """ Set game status with given status (should be in diplomacy.utils.strings.ALL_GAME_STATUSES). """
         assert status in strings.ALL_GAME_STATUSES
         self.status = status
+        self.latest_status_change_timestamp = common.timestamp_microseconds()
 
     def draw(self, winners=None):
         """ Force a draw for this game, set status as COMPLETED and finish the game.
