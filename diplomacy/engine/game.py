@@ -558,11 +558,13 @@ class Game(Jsonable):
         """ Return True if this game has given power name. """
         return power_name in self.map.powers
 
-    def has_expected_controls_count(self):
-        """ Return True if game has expected number of map powers to be controlled.
-            If True, the game can start (if not yet started).
+    def has_minimum_expected_controls_count(self):
+        """ Return True if game has minimum number of map powers to be controlled to evaluate auto-start logic.
         """
-        return self.count_controlled_powers() == self.get_expected_controls_count()
+        return self.count_controlled_powers() >= self.get_expected_controls_count()
+    
+    def game_is_full(self):
+        return self.count_controlled_powers() >= len(self.powers)
 
     def count_controlled_powers(self):
         """ Return the number of controlled map powers. """

@@ -122,7 +122,7 @@ class ServerGame(Game):
             :return: a boolean
             :rtype: bool
         """
-        return self.is_game_forming and not self.start_master and self.has_expected_controls_count()
+        return self.is_game_forming and not self.start_master and self.has_minimum_expected_controls_count()
 
     def get_messages(self, game_role, timestamp_from=None, timestamp_to=None):
         """ Return a filtered dict of current messages for given output game role.

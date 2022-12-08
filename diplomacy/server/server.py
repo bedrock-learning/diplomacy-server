@@ -689,7 +689,7 @@ class Server:
             # We have just loaded game from disk. Start it if necessary.
             if not server_game.start_master:
                 # We may have to start game.
-                if server_game.does_not_wait() and server_game.has_expected_controls_count():
+                if server_game.does_not_wait() and server_game.has_minimum_expected_controls_count():
                     # We must process game.
                     server_game.process()
                     self.save_game(server_game)

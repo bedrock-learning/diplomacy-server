@@ -489,12 +489,6 @@ def on_join_game(server, request, connection_handler):
             if server_game.has_observer_token(token) or server_game.has_omniscient_token(token):
                 raise exceptions.GameJoinRoleException()
 
-            # If allowed number of players is already reached, only game masters are allowed to control dummy powers.
-            if server_game.has_expected_controls_count() and not server.token_is_master(token, server_game):
-                raise exceptions.ResponseException(
-                    'Reached maximum number of allowed controlled powers for this game (%d).'
-                    % server_game.get_expected_controls_count())
-
             # If power is already controlled (by someone else), game must allow to select a power randomly.
             if server_game.is_controlled(power_name) and server_game.power_choice:
                 raise exceptions.ResponseException('You want to control a power that is already controlled,'
@@ -617,7 +611,7 @@ def on_join_powers(server, request, connection_handler):
             # Request sender already controls some powers but game does not allow multiple powers per player.
             raise exceptions.ResponseException('Disallowed multiple powers per player.')
 
-        if server_game.has_expected_controls_count():
+        if server_game.game_is_full():
             # Allowed number of players is already reached for this game.
             raise exceptions.ResponseException(
                 'Reached maximum number of allowed controlled powers for this game (%d).'
