@@ -17,6 +17,7 @@ RUN chown -R node:node /home/node/data
 WORKDIR /home/node/.cache
 RUN mkdir -p /home/node/.cache/diplomacy
 RUN chown -R node:node /home/node/.cache/diplomacy
+WORKDIR /home/node
 
 # Deploy stage - for packaging everything up into a self-contained container for pushing to ACR.
 FROM diplomacy-dev AS diplomacy-deploy
