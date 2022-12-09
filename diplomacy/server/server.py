@@ -352,6 +352,18 @@ class Server:
 
         self._load_available_maps()
 
+        """ Bedrock edits, tech debt: Server originally didn't load any games when waking up. It knew they 
+            were on disk, and would list them in ListGames, but wouldn't schedule their turn timers or anything.
+
+            The "get_game()" method is the recommended way to load a game into the current server and reactivate 
+            its schedule if active. Here, we always haev it call this for every game on the server. One day, we 
+            may need to periodically clear out old games.
+        """
+        for game_id in self.get_game_indices():
+            saved_game = self.load_game(game_id)
+            if saved_game.status != strings.CANCELED and saved_game.status != strings.COMPLETED:
+                self.get_game(game_id)
+
         LOGGER.info('Server loaded.')
 
     def _backup_server_data_now(self, force=False):
@@ -687,16 +699,17 @@ class Server:
             # Start DAIDE server for this game.
             self.start_new_daide_server(server_game.game_id)
             # We have just loaded game from disk. Start it if necessary.
-            if not server_game.start_master:
+            if not server_game.start_master and server_game.has_minimum_expected_controls_count():
                 # We may have to start game.
-                if server_game.does_not_wait() and server_game.has_minimum_expected_controls_count():
+                if server_game.does_not_wait():
                     # We must process game.
                     server_game.process()
                     self.save_game(server_game)
-                # Game must be scheduled only if active.
-                if server_game.is_game_active:
-                    LOGGER.debug('Game loaded and scheduled: %s', server_game.game_id)
-                    self.schedule_game(server_game)
+                    
+            # Game must be scheduled only if active.
+            if server_game.is_game_active:
+                LOGGER.debug('Game loaded and scheduled: %s', server_game.game_id)
+                self.schedule_game(server_game)
         return server_game
 
     def delete_game(self, server_game):
