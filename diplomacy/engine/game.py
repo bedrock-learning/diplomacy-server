@@ -1477,13 +1477,20 @@ class Game(Jsonable):
         self.message_history.put(previous_phase, previous_messages)
         self.state_history.put(previous_phase, previous_state)
 
-        # Set empty orders for unorderable powers.
+        
         if not self.is_game_done:
             orderable_locations = self.get_orderable_locations()
             for power_name, power_orderable_locs in orderable_locations.items():
-                if not power_orderable_locs and not self.get_power(power_name).is_eliminated():
+                power = self.get_power(power_name)
+                if not power_orderable_locs and not power.is_eliminated():
+                    # Set empty orders for unorderable powers.
                     self.set_orders(power_name, [])
                     self.set_wait(power_name, False)
+
+                # Bedrock Edits: Our turn flow now resets all players to "wait=True" after processing, and lets them all decide if they want to clear that flag with the "Ready Up" feature.
+                if power_orderable_locs and power.is_controlled() and not power.is_eliminated():
+                    # Reset wait flag for controlled powers that have potential orders this turn, even if they have civil disorder (maybe the player will get their act together this turn)
+                    self.set_wait(power_name, True)
 
         return GamePhaseData(name=str(previous_phase),
                              state=previous_state,
