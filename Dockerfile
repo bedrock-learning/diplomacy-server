@@ -11,6 +11,8 @@ RUN apt-get update \
 
 RUN useradd --create-home --user-group --uid 1000 node
 USER node
+RUN mkdir -p /home/node/.cache
+RUN chown -R node:node /home/node/.cache
 WORKDIR /home/node
 RUN mkdir -p /home/node/data
 RUN chown -R node:node /home/node/data
