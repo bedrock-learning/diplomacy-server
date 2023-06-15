@@ -9,8 +9,12 @@ RUN apt-get update \
   && pip3 --no-cache-dir install --upgrade pip \
   && rm -rf /var/lib/apt/lists/*
 
+# TODO: add build arg to pass in user id other than 1000
 RUN useradd --create-home --user-group --uid 1000 node
+
 USER node
+RUN mkdir -p /home/node/.cache
+RUN chown -R node:node /home/node/.cache
 WORKDIR /home/node
 RUN mkdir -p /home/node/data
 RUN chown -R node:node /home/node/data
@@ -18,6 +22,11 @@ WORKDIR /home/node/.cache
 RUN mkdir -p /home/node/.cache/diplomacy
 RUN chown -R node:node /home/node/.cache/diplomacy
 WORKDIR /home/node
+
+USER root
+RUN mkdir -p /workspaces/third_party/diplomacy
+RUN chown -R node:node /workspaces/third_party/diplomacy
+USER node
 
 # Deploy stage - for packaging everything up into a self-contained container for pushing to ACR.
 FROM diplomacy-dev AS diplomacy-deploy
