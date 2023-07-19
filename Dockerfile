@@ -11,8 +11,8 @@ RUN apt-get update \
 
 # The host machine must have a user with the uid used here, therefore the uid should be
 # provided as an arg.  Default is uid 1000.
-ARG hostUserId
-RUN if [ "$hostUserId" = "" ] ; then useradd --create-home --user-group --uid 1000 node ; else useradd --create-home --user-group --uid $hostUserId node ; fi
+ARG hostUserId=1000
+RUN useradd --create-home --user-group --uid ${hostUserId} node
 
 USER node
 RUN mkdir -p /home/node/.cache
