@@ -1642,6 +1642,8 @@ class Game(Jsonable):
         state = {}
         state['timestamp'] = common.timestamp_microseconds()
         state['zobrist_hash'] = self.get_hash()
+        # Bedrock edits: want outcome of game
+        state['outcome'] = self.outcome
         state['note'] = self.note
         state['name'] = self._phase_abbr()
         state['units'] = {}
