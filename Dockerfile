@@ -1,13 +1,9 @@
 # Development stage: Assumes the code folder will be mounted in for development purposes.
-FROM ubuntu:latest AS diplomacy-dev
+FROM python:3.7 AS diplomacy-dev
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
-  && apt-get install -y curl git nano wget python3-pip python3-dev \
-  && cd /usr/local/bin \
-  && ln -s /usr/bin/python3 python \
-  && pip3 --no-cache-dir install --upgrade pip \
-  && rm -rf /var/lib/apt/lists/*
+  && apt-get install -y curl git nano wget 
 
 # The host machine must have a user with the uid used here, therefore the uid should be
 # provided as an arg.  Default is uid 1000.
