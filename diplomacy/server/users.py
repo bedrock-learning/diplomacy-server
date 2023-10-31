@@ -70,6 +70,11 @@ class Users(Jsonable):
         self.token_to_connection_handler = {}
         self.connection_handler_to_tokens = {}
         super(Users, self).__init__(**kwargs)
+        
+    @property
+    def tokens(self):
+        # Return a list of all tokens
+        return list(self.token_timestamp.keys())
 
     def has_username(self, username):
         """ Return True if users have given username. """

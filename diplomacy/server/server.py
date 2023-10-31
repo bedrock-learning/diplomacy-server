@@ -63,6 +63,7 @@ from random import randint
 import socket
 import signal
 from typing import Dict, Set, List
+from datetime import datetime
 
 import tornado
 import tornado.web
@@ -198,7 +199,7 @@ class Server:
     __slots__ = ['data_path', 'games_path', 'available_maps', 'maps_mtime', 'notifications',
                  'games_scheduler', 'allow_registrations', 'max_games', 'remove_canceled_games', 'users', 'games',
                  'daide_servers', 'backup_server', 'backup_games', 'backup_delay_seconds', 'ping_seconds',
-                 'interruption_handler', 'backend', 'games_with_dummy_powers', 'dispatched_dummy_powers']
+                 'interruption_handler', 'backend', 'games_with_dummy_powers', 'dispatched_dummy_powers', 'token_cleanup_scheduler']
 
     # Servers cache.
     __cache__ = {}  # {absolute path of working folder => Server}
@@ -231,6 +232,10 @@ class Server:
         self.data_path = os.path.join(server_dir, 'data')
         self.games_path = os.path.join(self.data_path, 'games')
 
+        # Clean up tokens to increase overall performance.
+        LOGGER.debug("Scheduling token cleanup")
+        self.token_cleanup_scheduler = Scheduler(10, self.cleanup_tokens)
+
         # Data in memory (not stored on disk).
         self.notifications = Queue()
         self.games_scheduler = Scheduler(1, self._process_game)
@@ -262,7 +267,8 @@ class Server:
         # Dictionary mapping a game ID present in games_with_dummy_powers, to
         # a couple of associated bot token and time when bot token was associated to this game ID.
         # If there is no bot token associated, couple is (None, None).
-        self.dispatched_dummy_powers = {} # type: dict{str, tuple}
+        # type: dict{str, tuple}
+        self.dispatched_dummy_powers = {} 
 
         # DAIDE TCP servers listening to a game's dedicated port.
         self.daide_servers = {}             # {port: daide_server}
@@ -395,6 +401,18 @@ class Server:
             LOGGER.info('Game data saved: %s', game_id)
         self.backup_games.clear()
 
+    def cleanup_tokens(self, data):
+        # Get the current timestamp in microseconds
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # Include the timestamp in the LOGGER.debug() statement
+        LOGGER.debug(f"\n\n ~~~ cleaning up tokens: {data} {timestamp}")
+        for token in self.users.tokens:
+            LOGGER.debug(f"\tCleaning up token: {token}")
+            self.users.disconnect_token(token)
+
+        LOGGER.debug(f"\n\n ~~~ Finished cleaning up tokens \n\n")
+
     def backup_now(self, force=False):
         """ Save backup of server data and loaded games immediately.
 
@@ -483,6 +501,9 @@ class Server:
         # These both coroutines are used to manage games.
         io_loop.add_callback(self.games_scheduler.process_tasks)
         io_loop.add_callback(self.games_scheduler.schedule)
+        LOGGER.debug("\n\n ~~~ Starting token cleanup scheduler on startup.\n\n")
+        io_loop.add_callback(self.token_cleanup_scheduler.process_tasks)
+        io_loop.add_callback(self.token_cleanup_scheduler.schedule)
         # Set callback on KeyboardInterrupt.
         signal.signal(signal.SIGINT, self.interruption_handler.handler)
         atexit.register(self.backup_now)
@@ -495,6 +516,9 @@ class Server:
             :param io_loop: (optional) tornado IO lopp where server must run. If not provided, get
                 default IO loop instance (tornado.ioloop.IOLoop.instance()).
         """
+        # schedule cleaning up the tokens
+        LOGGER.debug("\n\n ~~~ start:: adding task to token_cleanup_scheduler .\n\n")
+        self.token_cleanup_scheduler.add_data("clear-tokens", 10)
         if self.backend is not None:
             raise exceptions.DiplomacyException('Server is already running on port %s.' % self.backend.port)
         if port is None:
