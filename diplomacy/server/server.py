@@ -138,6 +138,7 @@ def load_json_from_disk(filename):
         os.rename(backup_filename, filename)
     return json_dict
 
+
 def ensure_path(folder_path):
     """ Make sure given folder path exists and return given path.
         Raises an exception if path does not exists, cannot be created or is not a folder.
@@ -186,7 +187,6 @@ class _ServerBackend:
     #pylint: disable=too-few-public-methods
     __slots__ = ['port', 'application', 'http_server', 'io_loop']
 
-
     def __init__(self):
         """ Initialize server backend. """
         self.port = None
@@ -205,7 +205,7 @@ class Server:
     __cache__ = {}  # {absolute path of working folder => Server}
 
     def __new__(cls, server_dir=None, **kwargs):
-        #pylint: disable=unused-argument
+        # pylint: disable=unused-argument
         server_dir = get_absolute_path(server_dir)
         if server_dir in cls.__cache__:
             server = cls.__cache__[server_dir]
@@ -234,7 +234,7 @@ class Server:
 
         # Clean up tokens to increase overall performance.
         LOGGER.debug("Scheduling token cleanup")
-        self.token_cleanup_scheduler = Scheduler(10, self.cleanup_tokens)
+        self.token_cleanup_scheduler = Scheduler(1, self.cleanup_tokens)
 
         # Data in memory (not stored on disk).
         self.notifications = Queue()
@@ -253,8 +253,10 @@ class Server:
         self.backup_delay_seconds = constants.DEFAULT_BACKUP_DELAY_SECONDS
         self.ping_seconds = constants.DEFAULT_PING_SECONDS
         self.users = None  # type: Users  # Users and administrators usernames.
-        self.available_maps = {}  # type: Dict[str, List[str]] # {"map_name" => list("map_power")}
-        self.maps_mtime = 0  # Latest maps modification date (used to manage maps cache in server object).
+        # type: Dict[str, List[str]] # {"map_name" => list("map_power")}
+        self.available_maps = {}
+        # Latest maps modification date (used to manage maps cache in server object).
+        self.maps_mtime = 0
 
         # Server games loaded on memory (stored on disk).
         # Saved separately (each game in one JSON file).
@@ -268,7 +270,7 @@ class Server:
         # a couple of associated bot token and time when bot token was associated to this game ID.
         # If there is no bot token associated, couple is (None, None).
         # type: dict{str, tuple}
-        self.dispatched_dummy_powers = {} 
+        self.dispatched_dummy_powers = {}
 
         # DAIDE TCP servers listening to a game's dedicated port.
         self.daide_servers = {}             # {port: daide_server}
@@ -277,11 +279,15 @@ class Server:
         self._load()
 
         # If necessary, updated server configurable attributes from kwargs.
-        self.allow_registrations = bool(kwargs.pop(strings.ALLOW_REGISTRATIONS, self.allow_registrations))
+        self.allow_registrations = bool(kwargs.pop(
+            strings.ALLOW_REGISTRATIONS, self.allow_registrations))
         self.max_games = int(kwargs.pop(strings.MAX_GAMES, self.max_games))
-        self.remove_canceled_games = bool(kwargs.pop(strings.REMOVE_CANCELED_GAMES, self.remove_canceled_games))
-        self.backup_delay_seconds = int(kwargs.pop(strings.BACKUP_DELAY_SECONDS, self.backup_delay_seconds))
-        self.ping_seconds = int(kwargs.pop(strings.PING_SECONDS, self.ping_seconds))
+        self.remove_canceled_games = bool(kwargs.pop(
+            strings.REMOVE_CANCELED_GAMES, self.remove_canceled_games))
+        self.backup_delay_seconds = int(kwargs.pop(
+            strings.BACKUP_DELAY_SECONDS, self.backup_delay_seconds))
+        self.ping_seconds = int(kwargs.pop(
+            strings.PING_SECONDS, self.ping_seconds))
         assert not kwargs
         LOGGER.debug('Ping        : %s', self.ping_seconds)
         LOGGER.debug('Backup delay: %s', self.backup_delay_seconds)
@@ -298,7 +304,8 @@ class Server:
         """ Load a dictionary (self.available_maps) mapping every map name to a dict of map info.
             for all maps available in diplomacy package.
         """
-        diplomacy_map_dir = os.path.join(diplomacy.settings.PACKAGE_DIR, strings.MAPS)
+        diplomacy_map_dir = os.path.join(
+            diplomacy.settings.PACKAGE_DIR, strings.MAPS)
         new_maps_mtime = self.maps_mtime
         for filename in os.listdir(diplomacy_map_dir):
             if filename.endswith('.map'):
@@ -327,9 +334,12 @@ class Server:
     def _load(self):
         """ Load database from disk. """
         LOGGER.info("Loading database.")
-        ensure_path(self.data_path)                                 # <server dir>/data
-        ensure_path(self.games_path)                                # <server dir>/data/games
-        server_data_filename = self._get_server_data_filename()     # <server dir>/data/server.json
+        # <server dir>/data
+        ensure_path(self.data_path)
+        # <server dir>/data/games
+        ensure_path(self.games_path)
+        # <server dir>/data/server.json
+        server_data_filename = self._get_server_data_filename()
         if os.path.exists(server_data_filename):
             LOGGER.info("Loading server.json.")
             server_info = load_json_from_disk(server_data_filename)
@@ -405,8 +415,15 @@ class Server:
         # Get the current timestamp in microseconds
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+        # Iterate over all games in the server
+        LOGGER.debug(f"\n\n ~~~ cleaning up Game tokens: {data} {timestamp}")
+        for game in self.games.values():
+            # Remove all tokens from the game
+            LOGGER.debug(f"\t ~~~ Remove all tokens from the game: {game.map_name}")
+            game.filter_tokens(lambda token: False)
+
         # Include the timestamp in the LOGGER.debug() statement
-        LOGGER.debug(f"\n\n ~~~ cleaning up tokens: {data} {timestamp}")
+        LOGGER.debug(f"\n\n ~~~ cleaning up user tokens: {data} {timestamp}")
         for token in self.users.tokens:
             LOGGER.debug(f"\tCleaning up token: {token}")
             self.users.disconnect_token(token)
@@ -430,7 +447,8 @@ class Server:
             :return: A boolean indicating if we must stop game.
             :type server_game: ServerGame
         """
-        LOGGER.debug('Processing game %s (status %s).', server_game.game_id, server_game.status)
+        LOGGER.debug('Processing game %s (status %s).',
+                     server_game.game_id, server_game.status)
         previous_phase_data, current_phase_data, kicked_powers = server_game.process()
         self.save_game(server_game)
 
@@ -486,7 +504,8 @@ class Server:
             try:
                 yield connection_handler.write_message(notification)
             except WebSocketClosedError:
-                LOGGER.error('Websocket was closed while sending a notification.')
+                LOGGER.error(
+                    'Websocket was closed while sending a notification.')
             except StreamClosedError:
                 LOGGER.error('Stream was closed while sending a notification.')
             finally:
@@ -501,7 +520,8 @@ class Server:
         # These both coroutines are used to manage games.
         io_loop.add_callback(self.games_scheduler.process_tasks)
         io_loop.add_callback(self.games_scheduler.schedule)
-        LOGGER.debug("\n\n ~~~ Starting token cleanup scheduler on startup.\n\n")
+        LOGGER.debug(
+            "\n\n ~~~ Starting token cleanup scheduler on startup.\n\n")
         io_loop.add_callback(self.token_cleanup_scheduler.process_tasks)
         io_loop.add_callback(self.token_cleanup_scheduler.schedule)
         # Set callback on KeyboardInterrupt.
@@ -520,7 +540,8 @@ class Server:
         LOGGER.debug("\n\n ~~~ start:: adding task to token_cleanup_scheduler .\n\n")
         self.token_cleanup_scheduler.add_data("clear-tokens", 10)
         if self.backend is not None:
-            raise exceptions.DiplomacyException('Server is already running on port %s.' % self.backend.port)
+            raise exceptions.DiplomacyException(
+                'Server is already running on port %s.' % self.backend.port)
         if port is None:
             port = 8432
         if io_loop is None:
@@ -536,7 +557,8 @@ class Server:
             'websocket_max_message_size': 64 * 1024 * 1024
         }
         self.backend = _ServerBackend()
-        self.backend.application = tornado.web.Application(handlers, **settings)
+        self.backend.application = tornado.web.Application(
+            handlers, **settings)
         self.backend.http_server = self.backend.application.listen(port)
         self.backend.io_loop = io_loop
         self.backend.port = port
@@ -607,8 +629,10 @@ class Server:
                 self.games_with_dummy_powers[server_game.game_id] = dummy_power_names
                 # Every time we update registry of dummy powers,
                 # then we also update bot time in registry of dummy powers associated to bot tokens.
-                bot_token, _ = self.dispatched_dummy_powers.get(server_game.game_id, (None, None))
-                self.dispatched_dummy_powers[server_game.game_id] = (bot_token, common.timestamp_microseconds())
+                bot_token, _ = self.dispatched_dummy_powers.get(
+                    server_game.game_id, (None, None))
+                self.dispatched_dummy_powers[server_game.game_id] = (
+                    bot_token, common.timestamp_microseconds())
         if not dummy_power_names:
             # No waiting dummy powers for this game, or game is not playable (canceled, completed, or forming).
             self.games_with_dummy_powers.pop(server_game.game_id, None)
@@ -623,13 +647,15 @@ class Server:
             :return: a dictionary mapping each game ID to a list of power names.
         """
         if self.users.get_name(bot_token) != constants.PRIVATE_BOT_USERNAME:
-            raise exceptions.ResponseException('Invalid bot token %s' % bot_token)
+            raise exceptions.ResponseException(
+                'Invalid bot token %s' % bot_token)
         selected_size = 0
         selected_games = {}
         for game_id in sorted(list(self.games_with_dummy_powers.keys())):
             registered_token, registered_time = self.dispatched_dummy_powers[game_id]
             if registered_token is not None:
-                time_elapsed_seconds = (common.timestamp_microseconds() - registered_time) / 1000000
+                time_elapsed_seconds = (
+                    common.timestamp_microseconds() - registered_time) / 1000000
                 if time_elapsed_seconds > constants.PRIVATE_BOT_TIMEOUT_SECONDS or registered_token == bot_token:
                     # This game still has dummy powers but, either time allocated to previous bot token is over,
                     # or bot dedicated to this game is asking for current dummy powers of this game.
@@ -646,7 +672,8 @@ class Server:
                 # Otherwise we collect this game.
                 selected_games[game_id] = dummy_power_names
                 selected_size += nb_powers
-                self.dispatched_dummy_powers[game_id] = (bot_token, common.timestamp_microseconds())
+                self.dispatched_dummy_powers[game_id] = (
+                    bot_token, common.timestamp_microseconds())
         return selected_games
 
     def has_game_id(self, game_id):
@@ -675,11 +702,13 @@ class Server:
         """
         if game_id in self.games:
             return self.games[game_id]
-        game_filename = os.path.join(ensure_path(self.games_path), '%s.json' % game_id)
+        game_filename = os.path.join(ensure_path(
+            self.games_path), '%s.json' % game_id)
         if not os.path.isfile(game_filename):
             raise exceptions.GameIdException()
         try:
-            server_game = ServerGame.from_dict(load_json_from_disk(game_filename))  # type: ServerGame
+            server_game = ServerGame.from_dict(
+                load_json_from_disk(game_filename))  # type: ServerGame
             server_game.server = self
             server_game.filter_usernames(self.users.has_username)
             server_game.filter_tokens(self.users.has_token)
@@ -729,10 +758,11 @@ class Server:
                     # We must process game.
                     server_game.process()
                     self.save_game(server_game)
-                    
+
             # Game must be scheduled only if active.
             if server_game.is_game_active:
-                LOGGER.debug('Game loaded and scheduled: %s', server_game.game_id)
+                LOGGER.debug('Game loaded and scheduled: %s',
+                             server_game.game_id)
                 self.schedule_game(server_game)
         return server_game
 
@@ -745,7 +775,8 @@ class Server:
         """
         if not (server_game.is_game_canceled or server_game.is_game_completed):
             server_game.set_status(strings.CANCELED)
-        game_filename = os.path.join(self.games_path, '%s.json' % server_game.game_id)
+        game_filename = os.path.join(
+            self.games_path, '%s.json' % server_game.game_id)
         backup_game_filename = get_backup_filename(game_filename)
         if os.path.isfile(game_filename):
             os.remove(game_filename)
@@ -941,7 +972,8 @@ class Server:
         daide_server = DaideServer(self, game_id)
         daide_server.listen(port)
         self.daide_servers[port] = daide_server
-        LOGGER.info('DAIDE server running for game %s on port %d', game_id, port)
+        LOGGER.info('DAIDE server running for game %s on port %d',
+                    game_id, port)
         return port
 
     def stop_daide_server(self, game_id):
