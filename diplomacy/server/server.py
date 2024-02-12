@@ -401,8 +401,14 @@ class Server:
             :param force: if True, force to save server data and all loaded games
                 even if there are no recent changes.
         """
-        self._backup_server_data_now(force=force)
-        self._backup_games_now(force=force)
+        """ Bedrock edits: 
+            Added try/except handling to deal with occasional permission denied errors on server.json when deployed in Azure
+        """
+        try:
+            self._backup_server_data_now(force=force)
+            self._backup_games_now(force=force)
+        except Exception as exception:
+            LOGGER.exception('Exception while saving backup of server data and loaded games')
 
     @gen.coroutine
     def _process_game(self, server_game):
