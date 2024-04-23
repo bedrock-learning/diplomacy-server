@@ -491,17 +491,21 @@ class ServerGame(Game):
                 kicked_powers[power.name] = set(power.tokens)
                 power.set_controlled(None)
 
+        # Bedrock - I think this might be a use case we need to look at more in depth
         if kicked_powers:
             # Some powers were kicked from an active game before processing.
             # This game must be stopped and cannot be processed. We return info about kicked powers.
-            self.set_status(strings.FORMING)
+            # Bedrock we do not want to set this back to forming
+            # self.set_status(strings.FORMING)
             return None, None, kicked_powers
 
         # Process game and retrieve previous state.
         previous_phase_data = super(ServerGame, self).process()
+        
         if self.count_controlled_powers() < self.get_expected_controls_count():
             # There is no more enough controlled powers, we should stop game.
-            self.set_status(strings.FORMING)
+            if self.status != strings.ACTIVE:  # Bedrock - we do not want to stop a game that has started because there is not enough powers
+                self.set_status(strings.FORMING)
 
         # Return process results: previous phase data, current phase data, and None for no kicked powers.
         return previous_phase_data, self.get_phase_data(), None

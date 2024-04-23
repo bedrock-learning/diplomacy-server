@@ -857,7 +857,8 @@ class Server:
         self.users.disconnect_token(token)
         for server_game in self.games.values():  # type: ServerGame
             server_game.remove_token(token)
-            self.stop_game_if_needed(server_game)
+            # Bedrock - we do not want games to revert to FORMING status once active.
+            # self.stop_game_if_needed(server_game)
             self.save_game(server_game)
         self.save_data()
 
